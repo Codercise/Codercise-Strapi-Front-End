@@ -1,25 +1,55 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
+
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
+
 import './App.css';
 
-function App() {
+import Navigation from './components/Navigation/Navigation';
+import PageContainer from './components/PageContainer/PageContainer';
+import PageContent from './components/PageContent/PageContent';
+
+function App(props) {
+  const [siteElements, setSiteElements] = useState({
+    SiteLogo: {}
+  });
+
+  async function getSiteElements() {
+    const response = await fetch(`http://localhost:1337/site-elements`);
+    const siteElements = await response.json();
+    if (siteElements.length > 0) {
+      setSiteElements(siteElements[0]);
+    }
+  }
+
+  useEffect(() => {
+    getSiteElements();
+  }, []);
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <PageContainer siteElements={siteElements}>
+        <Navigation siteName={ siteElements.SiteName } logoPath={siteElements.SiteLogo.url} />
+
+        <Switch>
+          <Route path="/about">
+            <PageContent path={`about`} />
+          </Route>
+          <Route path="/contact">
+            <PageContent path={`contact`} />
+          </Route>
+          <Route path="/home">
+            <PageContent path={`home`} />
+          </Route>
+          <Route path="/">
+            <PageContent path={`home`} />
+          </Route>
+        </Switch>
+      </PageContainer>
+    </Router>
   );
 }
 
